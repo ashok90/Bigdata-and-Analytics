@@ -25,3 +25,4 @@ for x in x:
 
 with open('data.txt', 'a') as outfile:
      json.dump(rates1,outfile)
+df=pandas.read_json(a);
