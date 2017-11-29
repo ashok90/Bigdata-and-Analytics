@@ -1,0 +1,44 @@
+
+https://chrisalbon.com/machine-learning/feature_selection_using_random_forest.html
+http://www.techpoweredmath.com/spark-dataframes-mllib-tutorial/#.Wh3bzlWnGpo
++++++++++++++++++++++++++++++++++++++++++++++++
+from pyspark.sql.types import *
+from pyspark.sql import Row
+data=sc.textFile('/idn/home/akuppura/learn/bit.tsv')
+rdd = data.map(lambda line: line.split("\t"))
+rdd.take(10)
+
+df = rdd.map(lambda line: Row(Date = line[0], Open = line[1], volume=line[5], weekday=line[8], weekend=line[9])).toDF()
+
+
+
+
+
+
+import pyspark.mllib
+import pyspark.mllib.regression
+from pyspark.mllib.regression import LabeledPoint
+from pyspark.sql.functions import *
+
+temp = df.map(lambda line:LabeledPoint(line[1],[line[2]]))
+temp.take(5)
+
+
+(trainingData, testData) = temp.randomSplit([0.7, 0.3])
+
+
+model = RandomForest.trainRegressor(temp, categoricalFeaturesInfo={},numTrees=10, featureSubsetStrategy="auto",impurity='variance', maxDepth=4, maxBins=32)
+
+model = RandomForest.trainClassifier(trainingData, 4, {}, 3, seed=42)
+model = RandomForest.trainRegressor(trainingData, {}, 2, seed=42)
+
+
+
+
+
+
+
+
+from pyspark.mllib.regression import LabeledPoint
+from pyspark.mllib.tree import DecisionTree
+from pyspark.mllib.linalg import SparseVector
