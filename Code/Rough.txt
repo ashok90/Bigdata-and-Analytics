@@ -2,6 +2,7 @@
 https://chrisalbon.com/machine-learning/feature_selection_using_random_forest.html
 http://www.techpoweredmath.com/spark-dataframes-mllib-tutorial/#.Wh3bzlWnGpo
 https://github.com/jakevdp/ESAC-stats-2014/blob/master/notebooks/04.2-Regression-Forests.ipynb
+Feature importance -> https://stackoverflow.com/questions/28971989/pyspark-mllib-random-forest-feature-importances
 
 
 mkdir -p data
