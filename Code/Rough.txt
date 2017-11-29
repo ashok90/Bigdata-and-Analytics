@@ -25,9 +25,11 @@ rdd = data.map(lambda line: line.split("\t"))
 rdd.take(10)
 
 df = rdd.map(lambda line: Row(Open = line[1], volume=line[5],weekday=datetime.strptime(line[0],"%y%m%d").date().weekday())).toDF()
-temp = df.map(lambda line:LabeledPoint(line[1],[line[2:]]))
+temp = df.map(lambda line:LabeledPoint(line[0],[line[1:]]))
 temp.take(5)
 (trainingData, testData) = temp.randomSplit([0.9, 0.1])
+
+
 model = RandomForest.trainRegressor(trainingData, categoricalFeaturesInfo={},numTrees=10, featureSubsetStrategy="auto",impurity='variance', maxDepth=4, maxBins=32)
 predictions = model.predict(testData.map(lambda x: x.features))
 labelsAndPredictions = testData.map(lambda lp: lp.label).zip(predictions)
@@ -38,3 +40,8 @@ print('Learned regression forest model:')
 print(model.toDebugString())
 
 
+model = GradientBoostedTrees.trainClassifier(trainingData,categoricalFeaturesInfo={}, numIterations=3)
+predictions = model.predict(testData.map(lambda x: x.features))
+labelsAndPredictions = testData.map(lambda lp: lp.label).zip(predictions)
+testErr = labelsAndPredictions.filter(lambda lp: lp[0] != lp[1]).count() / float(testData.count())
+print('Test Error = ' + str(testErr))
