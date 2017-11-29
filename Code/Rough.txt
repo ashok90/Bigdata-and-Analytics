@@ -13,41 +13,28 @@ curl https://www.quandl.com/api/v3/datasets/BCHARTS/COINBASEEUR.csv?api_key=3ny-
 +++++++++++++++++++++++++++++++++++++++++++++++
 from pyspark.sql.types import *
 from pyspark.sql import Row
-data=sc.textFile('/idn/home/akuppura/learn/bit.tsv')
-rdd = data.map(lambda line: line.split("\t"))
-rdd.take(10)
-
-df = rdd.map(lambda line: Row(Date = line[0], Open = line[1], volume=line[5], weekday=line[8], weekend=line[9])).toDF()
-
-
-
-
-
+from datetime import datetime
 
 import pyspark.mllib
 import pyspark.mllib.regression
 from pyspark.mllib.regression import LabeledPoint
 from pyspark.sql.functions import *
 
-temp = df.map(lambda line:LabeledPoint(line[1],[line[2]]))
+data=sc.textFile('/idn/home/akuppura/learn/bit.tsv')
+rdd = data.map(lambda line: line.split("\t"))
+rdd.take(10)
+
+df = rdd.map(lambda line: Row(Open = line[1], volume=line[5],weekday=datetime.strptime(line[0],"%y%m%d").date().weekday())).toDF()
+temp = df.map(lambda line:LabeledPoint(line[1],[line[2:]]))
 temp.take(5)
+(trainingData, testData) = temp.randomSplit([0.9, 0.1])
+model = RandomForest.trainRegressor(trainingData, categoricalFeaturesInfo={},numTrees=10, featureSubsetStrategy="auto",impurity='variance', maxDepth=4, maxBins=32)
+predictions = model.predict(testData.map(lambda x: x.features))
+labelsAndPredictions = testData.map(lambda lp: lp.label).zip(predictions)
+testMSE = labelsAndPredictions.map(lambda lp: (lp[0] - lp[1]) * (lp[0] - lp[1])).sum() /\
+    float(testData.count())
+print('Test Mean Squared Error = ' + str(testMSE))
+print('Learned regression forest model:')
+print(model.toDebugString())
 
 
-(trainingData, testData) = temp.randomSplit([0.7, 0.3])
-
-
-model = RandomForest.trainRegressor(temp, categoricalFeaturesInfo={},numTrees=10, featureSubsetStrategy="auto",impurity='variance', maxDepth=4, maxBins=32)
-
-model = RandomForest.trainClassifier(trainingData, 4, {}, 3, seed=42)
-model = RandomForest.trainRegressor(trainingData, {}, 2, seed=42)
-
-
-
-
-
-
-
-
-from pyspark.mllib.regression import LabeledPoint
-from pyspark.mllib.tree import DecisionTree
-from pyspark.mllib.linalg import SparseVector
