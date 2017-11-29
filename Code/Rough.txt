@@ -2,6 +2,13 @@
 https://chrisalbon.com/machine-learning/feature_selection_using_random_forest.html
 http://www.techpoweredmath.com/spark-dataframes-mllib-tutorial/#.Wh3bzlWnGpo
 https://github.com/jakevdp/ESAC-stats-2014/blob/master/notebooks/04.2-Regression-Forests.ipynb
+
+
+mkdir -p data
+curl https://www.quandl.com/api/v3/datasets/BCHARTS/COINBASEUSD.csv?api_key=3ny-RLKDcGxjRDxRco8J >>data/Bitcoin_USD_History.csv
+curl https://www.quandl.com/api/v3/datasets/BCHARTS/COINBASEGBP.csv?api_key=3ny-RLKDcGxjRDxRco8J >>data/Bitcoin_GBP_History.csv
+curl https://www.quandl.com/api/v3/datasets/BCHARTS/COINBASEEUR.csv?api_key=3ny-RLKDcGxjRDxRco8J >>data/Bitcoin_EUR_History.csv
+
 +++++++++++++++++++++++++++++++++++++++++++++++
 from pyspark.sql.types import *
 from pyspark.sql import Row
