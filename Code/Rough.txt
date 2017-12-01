@@ -15,6 +15,104 @@ curl https://www.quandl.com/api/v3/datasets/BCHARTS/COINBASEUSD.csv?api_key=3ny-
 curl https://www.quandl.com/api/v3/datasets/BCHARTS/COINBASEGBP.csv?api_key=3ny-RLKDcGxjRDxRco8J >>data/Bitcoin_GBP_History.csv
 curl https://www.quandl.com/api/v3/datasets/BCHARTS/COINBASEEUR.csv?api_key=3ny-RLKDcGxjRDxRco8J >>data/Bitcoin_EUR_History.csv
 
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+============rformula 
+spark = SparkSession.builder.master("local").appName("Word Count")
+...     .getOrCreate()
+
+
+from pyspark.mllib.linalg import Vectors
+from pyspark.sql import SQLContext
+sqlContext = SQLContext(sc)
+
+dataFrame = sqlContext.createDataFrame([
+    (0, Vectors.dense([1.0, 0.1, -1.0]),),
+    (1, Vectors.dense([2.0, 1.1, 1.0]),),
+    (2, Vectors.dense([3.0, 10.1, 3.0]),)
+], ["id", "features"])
+
+
+from pyspark.ml.feature import RFormula
+
+dataset = sqlContext.createDataFrame(
+    [(7, "US", 18, 1.0),
+     (8, "CA", 12, 0.0),
+     (9, "NZ", 15, 0.0)],
+    ["id", "country", "hour", "clicked"])
+
+	
+============imputer
+
+from pyspark.ml.feature import Imputer
+
+df = sqlContext.createDataFrame([
+    (1.0, float("nan")),
+    (2.0, float("nan")),
+    (float("nan"), 3.0),
+    (4.0, 4.0),
+    (5.0, 5.0)
+], ["a", "b"])
+
+imputer = Imputer(inputCols=["a", "b"], outputCols=["out_a", "out_b"])
+model = imputer.fit(df)
+
+model.transform(df).show()
+
+
+==============indexer 
+import numpy
+from numpy import allclose
+from pyspark.ml.linalg import Vectors
+from pyspark.ml.feature import StringIndexer
+from pyspark.ml.classification import RandomForestClassifier
+
+
+stringIndexer = StringIndexer(inputCol="weekend", outputCol="indexed")
+si_model = stringIndexer.fit(df)
+td = si_model.transform(df)
+rf = RandomForestClassifier(numTrees=3, maxDepth=2, labelCol="indexed", seed=42)
+model = rf.fit(td)
+model.featureImportances
+
+==================predict 
+
+model = RandomForest.trainRegressor(sc.parallelize(sparse_data), {}, 2, seed=42)
+ model.numTrees()
+2
+>>> model.totalNumNodes()
+4
+>>> model.predict(SparseVector(2, {1: 1.0}))
+1.0
+>>> model.predict(SparseVector(2, {0: 1.0}))
+0.5
+>>> rdd = sc.parallelize([[0.0, 1.0], [1.0, 0.0]])
+>>> model.predict(rdd).collect()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 +++++++++++++++++++++++++++++++++++++++++++++++
 from pyspark.sql.types import *
 from pyspark.sql import Row
