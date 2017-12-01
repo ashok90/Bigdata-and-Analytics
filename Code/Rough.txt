@@ -4,6 +4,8 @@ http://www.techpoweredmath.com/spark-dataframes-mllib-tutorial/#.Wh3bzlWnGpo
 https://github.com/jakevdp/ESAC-stats-2014/blob/master/notebooks/04.2-Regression-Forests.ipynb
 Feature importance -> https://stackoverflow.com/questions/28971989/pyspark-mllib-random-forest-feature-importances
 
+Random forest- comparison
+http://fastml.com/what-is-better-gradient-boosted-trees-or-random-forest/
 
 mkdir -p data
 curl https://www.quandl.com/api/v3/datasets/BCHARTS/COINBASEUSD.csv?api_key=3ny-RLKDcGxjRDxRco8J >>data/Bitcoin_USD_History.csv
