@@ -1,0 +1,84 @@
+from pyspark import SparkContext, SparkConf
+conf = SparkConf().setAppName("RandomForest").setMaster("local[4]")
+sc = SparkContext(conf=conf)
+
+from pyspark.sql.types import *
+from pyspark.sql import Row
+from datetime import datetime
+
+import pyspark.mllib
+import pyspark.mllib.regression
+from pyspark.mllib.regression import LabeledPoint
+from pyspark.sql.functions import *
+from pyspark.ml.classification import RandomForestClassifier
+from pyspark.mllib.tree import RandomForest, RandomForestModel
+from pyspark.mllib.util import MLUtils
+
+
+
+###load base data 
+data=sc.textFile('/Users/ashokkuppuraj/Documents/Indiana Univ/fall 2017/BIG DATA/Project/scripts/data/Bitcoin_USD_History.csv')
+rdd = data.map(lambda line: line.split(","))
+header = rdd.first()
+rdd = rdd.filter(lambda line:line != header)
+rdd.take(10)
+base_df = rdd.map(lambda line: Row(aaclose=line[4],waitage=line[7],open=line[1],high=line[2],low=line[3],btc_vol=line[5],cur_vol=line[6],weekday=datetime.strptime(line[0],"%Y-%m-%d").date().weekday(),dt=line[0])).toDF()
+
+
+#load Google data
+
+google_data=sc.textFile('/Users/ashokkuppuraj/Documents/Indiana Univ/fall 2017/BIG DATA/Project/scripts/data/Google-Intererst-Bitcoin.csv')
+google_rdd = google_data.map(lambda line: line.split(","))
+header_g = google_rdd.first()
+google_rdd = google_rdd.filter(lambda line:line != header_g)
+google_rdd.take(10)
+google_df=rdd.map(lambda line: Row(dt_sp=line[0],cnt=line[1])).toDF()
+
+
+#Load ETH DATA 
+data1=sc.textFile('/Users/ashokkuppuraj/Documents/Indiana Univ/fall 2017/BIG DATA/Project/scripts/data/export-ETHTx.csv')
+data2=sc.textFile('/Users/ashokkuppuraj/Documents/Indiana Univ/fall 2017/BIG DATA/Project/scripts/data/export-EtherPrice.csv')
+rdd1 = data1.map(lambda line: line.split(","))
+rdd2 = data2.map(lambda line: line.split(","))
+header1 = rdd1.first()
+header2 = rdd2.first()
+rdd1 = rdd1.filter(lambda line:line != header1)
+rdd2 = rdd2.filter(lambda line:line != header2)
+rdd1.take(10)
+
+ETH_TXN_df = rdd1.map(lambda line: Row(dt=line[0],utime=line[1],txns=line[2])).toDF()
+ETH_PRICE_df = rdd2.map(lambda line: Row(dt=line[0],utime=line[1],price=line[2])).toDF()
+
+ETH_df=ETH_TXN_df.join(ETH_PRICE_df,ETH_TXN_df.dt==ETH_PRICE_df.dt)
+ETH_DF=ETH_df.rdd.map(lambda line:Row(dt=datetime.strptime(line[0],"%m/%d/%Y").strftime("%Y-%m-%d"),txns=line[1],price=line[4])).toDF()
+
+###Join base data with Google data 
+
+BIT_df=base_df.join(google_df,base_df.dt==google_df.dt_sp)
+
+###Join base data with Ether data 
+df=BIT_df.join(ETH_DF, BIT_df.dt==ETH_DF.dt)
+
+####################set up model 
+
+df=df.select([c for c in df.columns if c not in {'dt','dt_sp'}])
+temp = df.rdd.map(lambda line:LabeledPoint(line[0],[line[1:]]))
+temp.take(5)
+(trainingData, testData) = temp.randomSplit([0.8, 0.2])
+model = RandomForest.trainRegressor(trainingData, categoricalFeaturesInfo={},numTrees=8, featureSubsetStrategy="auto",impurity='variance', maxDepth=100, maxBins=32)
+predictions = model.predict(testData.map(lambda x: x.features))
+labelsAndPredictions = testData.map(lambda lp: lp.label).zip(predictions)
+
+
+###############accuracy 
+from operator import add
+acc = labelsAndPredictions.map(lambda x: ((x[0]/x[1])*100)).reduce(add)
+print ("Model accuracy: %.2f%%"  %(acc/labelsAndPredictions.count()))
+
+testMSE = labelsAndPredictions.map(lambda lp: (lp[0] - lp[1]) * (lp[0] - lp[1])).sum() /\
+    float(testData.count())
+print('Test Mean Squared Error = ' + str(testMSE))
+print('Learned regression forest model:')
+print(model.toDebugString())
+
+
