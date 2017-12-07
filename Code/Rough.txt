@@ -10,6 +10,11 @@ http://fastml.com/what-is-better-gradient-boosted-trees-or-random-forest/
 Plotting example 
 https://github.com/bigdata-i523/hid201/blob/master/experiment/Secchi%20Disk%20Data.ipynb
 
+Analysis : 
+https://spark.apache.org/docs/2.1.0/mllib-evaluation-metrics.html
+https://weiminwang.blog/2016/06/09/pyspark-tutorial-building-a-random-forest-binary-classifier-on-unbalanced-dataset/
+
+
 mkdir -p data
 curl https://www.quandl.com/api/v3/datasets/BCHARTS/COINBASEUSD.csv?api_key=3ny-RLKDcGxjRDxRco8J >>data/Bitcoin_USD_History.csv
 curl https://www.quandl.com/api/v3/datasets/BCHARTS/COINBASEGBP.csv?api_key=3ny-RLKDcGxjRDxRco8J >>data/Bitcoin_GBP_History.csv
