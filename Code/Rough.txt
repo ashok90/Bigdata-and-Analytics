@@ -14,6 +14,9 @@ Analysis :
 https://spark.apache.org/docs/2.1.0/mllib-evaluation-metrics.html
 https://weiminwang.blog/2016/06/09/pyspark-tutorial-building-a-random-forest-binary-classifier-on-unbalanced-dataset/
 
+Figure /ref{} describes the snapshotted layout of one of the source data. It has 7 columns about the Bitcoin statistics segregated on per day basis. The first column is date at which the other columns are recorder
+, the second is the openning price of the Bitcoin compared to USD on that day, likewise third, fouth and fifth colummns pertains to high, low and closing rates of Bitcoin. The sixth colunm represents BTC's transaction count on that day and seventh one is the same volume in terms of 
+USD value, at last is the weighted price 
 
 mkdir -p data
 curl https://www.quandl.com/api/v3/datasets/BCHARTS/COINBASEUSD.csv?api_key=3ny-RLKDcGxjRDxRco8J >>data/Bitcoin_USD_History.csv
